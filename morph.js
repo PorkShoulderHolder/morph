@@ -3,121 +3,167 @@
 /* it is useful to note that we always use var i = y * this.width + x to traverse arrays, and iterate through y within x */
 
 
-var Morph = function(height, width, b){
+var Morph = function(height, width, bits){
     this.height = height;
     this.width = width;
-    if(b){
-        this.bits = b;
-
+    if(bits){
+        this.data = bits;
+        if(this.height * this.width != this.data.length)throw 'MORPH_DIMENSION_ERROR: incorrect dimensions';
     }
     else{
-        this.bits = Array.apply(null, new Array(this.height * this.width)).map(Number.prototype.valueOf,0);
+        this.data = Array.apply(null, new Array(this.height * this.width)).map(Number.prototype.valueOf,0);
     }
+
+
 }
 
-var StructuringElement = function(dimension){
+var StructuringElement = function(d,initiliser){
 
-    this.dimension = dimension;
+    if(d){
+        this.dim = d;
+    }
+    else{
+        this.dim = 3;
+    }
+    if(!initiliser){
+        initiliser = 1;
+    }
+
     this.data = [];
     this.integerRepresentation = 0;
-    this.data = Array.apply(null, new Array(this.dimension * this.dimension)).map(Number.prototype.valueOf,1);
+    for(var ind = 0; ind < this.dim * this.dim; ind++){
+        this.data.push(1);
+    }
 
-//    for(var i = 0; i < dimension * dimension; i++){
-//        this.data.push(1);
-//    }
-
- //   sel = this;
-
-//    this.setData = function(data){
-//        sel.data = data;
-//        sel.integerRepresentation = parseInt(data, 2);
-//    }
 
 }
 
 /* structuring element class code */
 
-StructuringElement.prototype.unionOp = function(el){
 
+StructuringElement.prototype.dilateOp = function(el){
 
-    for(var i = 0; i < 9; i++){
-        if(el.data[i] || this.data[i]){
+    SECheck(el);
+    for(var j = 0; j < 9; j++){
+        if(el.data[j] == 1 && this.data[j] == 1){
             return 1;
         }
     }
+    return 0;
 }
 
-StructuringElement.prototype.intersectionOp = function(el){
-  //        console.log(el.data,this.data);
+StructuringElement.prototype.erodeOp = function(el){
+
+    SECheck(el);
     for(var i = 0; i < 9; i++){
-        if(el.data[i] == 1 && this.data[i] == 1){
-            return 1;
+        if(el.data[i] != this.data[i]){
+            return 0;
         }
     }
+    return 1;
 }
 
 
 /* Morph class code*/
 
-Morph.prototype.erode = function(){
+Morph.prototype.erodeWithElement = function(el){
+    if(el){
+        SECheck(el);
+    }
+    else{
+        el = new StructuringElement();
+    }
 
+    var result = Array.apply(null, new Array(this.height * this.width)).map(Number.prototype.valueOf,0);
+
+
+    for(var x = 1; x < this.width - 1; x++){
+        for(var y = 1; y < this.height - 1; y++){
+
+            var i = y * this.width + x;
+            var mat = this.constructMatrixForIndex(i, el.dim);
+            result[i] = el.erodeOp(mat);
+
+        }
+    }
+    this.data = result;
+    return this;
 }
 
 Morph.prototype.dilateWithElement = function(el){
+    if(el){
+        SECheck(el);
+    }
+    else{
+        el = new StructuringElement();
+    }
 
-    SECheck(el);
-    //el.operation = el.intersectionOp;
-    return this.applyMorphology(el);
+
+    var result = Array.apply(null, new Array(this.height * this.width)).map(Number.prototype.valueOf,0);
+
+
+    for(var x = 1; x < this.width - 1; x++){
+        for(var y = 1; y < this.height - 1; y++){
+
+            var i = y * this.width + x;
+            var mat = this.constructMatrixForIndex(i, el.dim);
+            result[i] = el.dilateOp(mat);
+
+        }
+    }
+    this.data = result;
+    return this;
 
 }
 
+Morph.prototype.erode
 
 
-Morph.prototype.applyMorphology = function(el){
+
+Morph.prototype.applyMorphology = function(op,el){
 
     SECheck(el);
 
     var result = Array.apply(null, new Array(this.height * this.width)).map(Number.prototype.valueOf,0);
 
 
-    for(var y = 1; y < this.height - 1; y++){
-        for(var x = 1; x < this.width - 1; x++){
+    for(var x = 1; x < this.width - 1; x++){
+        for(var y = 1; y < this.height - 1; y++){
 
             var i = y * this.width + x;
-            var mat = this.constructMatrixForIndex(i, el.dimension);
-            result[i] = el.intersectionOp(mat);
+            var mat = this.constructMatrixForIndex(i, el.dim);
+            result[i] = op(mat);
 
         }
     }
-
-    return result;
+    this.data = result;
+    return this;
 
 }
 
 
-Morph.prototype.constructMatrixForIndex = function(ind,dimension){
-    var mat = new StructuringElement(dimension);
-    var halfDim = Math.floor(dimension / 2);
-    var upperLeft = (ind - (this.width * halfDim)) - halfDim;
+Morph.prototype.constructMatrixForIndex = function(ind,d){
+    if(!d)d = 3;
+    var mat = new StructuringElement(d,0);
+    var halfDim = Math.floor(d / 2);
+    var upperLeft = (ind - (this.width * halfDim)) - 1;
     var count = 0;
-    for(var x = 0; x < dimension; x++){
-        for(var y = 0; y < dimension; y++){
-            var i = y * dimension;
-            var j = upperLeft + ((i / dimension) * this.width) + (x % dimension);
-            if(this.bits[j]){
-                Math.random();
-            }
-            mat[count] = this.bits[j];
-            count ++;
-        }
-    }
+    for(var x = 0; x < d * d; x++){
 
+        var j = upperLeft + (x % d) + this.width * Math.floor(x / d);
+        if(j < this.data.length && j >= 0){
+            mat.data[count] = this.data[j];
+            console.log(j, this.data[j]);
+
+        }
+        count++;
+    }
     return mat;
 }
 
 morphFromContext = function(context){
     var data = this.createImageData(context.width,context.height);
-    return Morph(context.height, context.width, context.createImageData(this.width,this.h))
+    return new Morph(context.height, context.width, context.createImageData(this.width,this.h))
 }
 
 SECheck = function(el){
@@ -126,3 +172,4 @@ SECheck = function(el){
         return;
     }
 }
+
