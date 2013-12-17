@@ -16,7 +16,6 @@ var testMorphErode =  new Morph(5,6,[0,0,0,1,1,1,
                                      0,1,1,1,1,1,
                                      0,0,1,1,1,0]);
 
-console.log(testMorph1);
 
 
 var constructEl = function(idx){
@@ -25,7 +24,6 @@ var constructEl = function(idx){
         var t = testMorph1.constructMatrixForIndex(idx).data
 
         var a = [0,0,1,0,1,0,1,0,0]
-        console.log(a.compare(t));
         console.assert(a.compare(t), "construct element8 test failed: output is: " + t + " but should be " + a);
     }
     if(idx == 13){
@@ -56,12 +54,23 @@ var fullTest = function(){
              0,0,0,0,1,0,
              0,0,1,1,1,0,
              0,0,0,1,0,0,
-             0,0,0,0,0,0];
+             0,0,0,0,0,0]
+
+    var anseq = [0,0,0,0,0,0,
+                 0,0,1,0,1,0,
+                 0,0,0,0,0,0,
+                 0,0,1,0,1,0,
+                 0,0,0,0,0,0];
+
+    var m = new Morph(5,6,a);
 
     var t = testMorph2.dilateWithElement(new StructuringElement());
     var terode = testMorphErode.erodeWithElement(new StructuringElement());
+    var teq = m.hitMissTransform()
+
     console.assert(a.compare(testMorph2.data), "final test failed: output is: " + testMorph2.data + " but should be " + a);
     console.assert(a2.compare(testMorphErode.data), "final test failed: output is: " + testMorphErode.data + " but should be " + a);
+    console.assert(anseq.compare(m.data), "final test failed: output is: " + testMorphErode.data + " but should be " + a);
 
 }
 
@@ -72,10 +81,31 @@ var interSectionOpTest = function(){
         var tester3 = new StructuringElement(3);
         var tester4 = new StructuringElement(3);
 
+        var eqTesterBL1 = new StructuringElement(3);
+        var eqTesterBL2 = new StructuringElement(3);
+        var eqTesterBL3 = new StructuringElement(3);
+        var eqTesterBL4 = new StructuringElement(3);
+
         tester1.data = [0,0,1,0,0,0,1,0,0];
         tester2.data = [0,0,0,0,0,0,0,0,0];
         tester3.data = [1,1,1,1,1,1,1,1,1];
         tester4.data = [1,1,1,1,1,1,1,0,1];
+
+        eqTesterBL1.data = [0,0,0,  //true
+                           1,1,0,
+                           1,1,0];
+
+        eqTesterBL2.data = [0,0,0,  //true
+                           1,1,0,
+                           0,1,1];
+
+        eqTesterBL3.data = [1,0,0,  //false
+                            1,1,1,
+                            1,1,0]
+
+        eqTesterBL4.data = [0,0,1,  //false
+                            0,0,0,
+                            0,0,0]
 
         var t1 = kernel.dilateOp(tester1);
         var t2 = kernel.dilateOp(tester2);
@@ -85,6 +115,12 @@ var interSectionOpTest = function(){
         var t2a = kernel.erodeOp(tester4);
         var t1ta = tester3.erodeOp(kernel);
         var t2ta = tester4.erodeOp(kernel);
+        var bl1 =  eqTesterBL1.equivalenceOp(MORPH_3x3_BOTTOM_LEFT_CORNER_ELEMENT)
+        var bl2 =  eqTesterBL2.equivalenceOp(MORPH_3x3_BOTTOM_LEFT_CORNER_ELEMENT)
+        var bl3 =  eqTesterBL3.equivalenceOp(MORPH_3x3_BOTTOM_LEFT_CORNER_ELEMENT)
+        var bl4 =  eqTesterBL4.equivalenceOp(MORPH_3x3_BOTTOM_LEFT_CORNER_ELEMENT)
+
+
 
        console.assert(t1 == 1, "intersectionOP test failed: output is: " + t1 + " but should be " + 1);
        console.assert(t2 == 0, "intersectionOP test failed: output is: " + t2 + " but should be " + 0);
@@ -94,6 +130,10 @@ var interSectionOpTest = function(){
        console.assert(t2a == 0, "intersectionOP test failed: output is: " + t2a + " but should be " + 0);
        console.assert(t1ta == 1, "intersectionOP test failed: output is: " + t1ta + " but should be " + 1);
        console.assert(t2ta == 0, "intersectionOP test failed: output is: " + t2ta + " but should be " + 0);
+       console.assert(bl1 == 1, "intersectionOP test failed: output is: " + t2ta + " but should be " + 1);
+       console.assert(bl2 == 1, "intersectionOP test failed: output is: " + t2ta + " but should be " + 1);
+       console.assert(bl3 == 0, "intersectionOP test failed: output is: " + t2ta + " but should be " + 0);
+       console.assert(bl4 == 0, "intersectionOP test failed: output is: " + t2ta + " but should be " + 0);
 
 }
 
