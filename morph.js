@@ -29,6 +29,19 @@ var StructuringElement = function(d,data){
     }
 }
 
+var Contours = function(){
+    this.contours = [[]];
+
+}
+
+Contours.prototype.totalPoints = function(){
+    var len = 0;
+    this.contours.forEach(function(contour){
+        len += contour.length;
+    })
+    return len;
+}
+
 var MORPH_3x3_CROSS_ELEMENT = new StructuringElement(3,[0, 1, 0,
                                                         1, 1, 1,
                                                         0, 1, 0])
@@ -104,6 +117,46 @@ var Morph = function(height, width, bits){
     }
 }
 
+
+Morph.prototype.constructMatrixForIndex = function(ind,d){
+    if(!d)d = 3;
+    var mat = new StructuringElement(d,0);
+    var halfDim = Math.floor(d / 2);
+    var upperLeft = ((ind - (this.height * halfDim))) - 1;
+
+    var count = 0;
+    for(var x = 0; x < d * d; x++){
+
+        var j = upperLeft + (x % d) + this.height * Math.floor(x / d);
+        if(j < this.data.length && j >= 0){
+            mat.data[count] = this.data[j];
+        }
+        count++;
+    }
+    return mat;
+}
+
+Morph.prototype.subtract = function(mo){
+    MorphCheck(mo);
+    for(var ind = 0; ind < this.data.length && ind < mo.data.length; ind++){
+        if(this.data[ind] == 1 && mo.data[ind] == 0){
+           continue;
+        }
+        this.data[ind] = 0;
+    }
+    return this;
+}
+
+Morph.prototype.add = function(mo){
+    MorphCheck(mo);
+    for(var ind = 0; ind < this.data.length && ind < mo.data.length; ind++){
+
+        if(mo.data[ind] == 1){
+           this.data[ind] = 1;
+        }
+    }
+}
+
 Morph.prototype.erodeWithElement = function(el){
     if(el){
         SECheck(el);
@@ -112,7 +165,12 @@ Morph.prototype.erodeWithElement = function(el){
         el = new StructuringElement();
     }
 
-    var result = Array.apply(null, new Array(this.height * this.width)).map(Number.prototype.valueOf,0);
+    var result = [];
+    var i = this.height * this.width
+    while(i > 0){
+        result.push(0)
+        i--;
+    }
 
 
     for(var x = 1; x < this.width - 1; x++){
@@ -151,6 +209,7 @@ Morph.prototype.dilateWithElement = function(el){
 }
 
 
+
 Morph.prototype.openingWithElement = function(el){
     this.dilateWithElement(el);
     this.erodeWithElement(el);
@@ -175,65 +234,118 @@ Morph.prototype.hitMissTransform = function(){
 
         }
     }
-    this.data = result;
-    return this;
+    return result;
 }
 
-Morph.prototype.applyMorphology = function(op,el){
+Morph.prototype.labelConnectedComponents = function(){
+    var copy = new Morph(this.height, this.width, this.data);
+    var labelIndex = 2;
 
-    SECheck(el);
+    var equivalenceClasses = new Array();
 
-    var result = Array.apply(null, new Array(this.height * this.width)).map(Number.prototype.valueOf,0);
 
-    for(var x = 1; x < this.width - 1; x++){
-        for(var y = 1; y < this.height - 1; y++){
+    for(var y = 1; y < this.height - 1; y++){
+        for(var x = 1; x < this.width - 1; x++){
+
             var i = y * this.width + x;
-            var mat = this.constructMatrixForIndex(i, el.dim);
-            result[i] = op(mat);
+            if(copy.data[i] > 0){
 
+                var mat = copy.constructMatrixForIndex(i, 3);
+                var connectedNeighborCount = 0;
+                var assignEquivalenceClass = function(label,i){
+                    if(connectedNeighborCount > 0){
+                        equivalenceClasses[String(label)] =  Math.min(equivalenceClasses[String(label)],Math.min(label,copy.data[i]));
+                        equivalenceClasses[String(copy.data[i])] = Math.min(equivalenceClasses[String(label)],Math.min(label,copy.data[i]));
+                        copy.data[i] =Math.min(equivalenceClasses[String(label)],Math.min(label,copy.data[i]));
+                    }
+                    else{
+                        equivalenceClasses[String(label)] = label;
+                        copy.data[i] = label;
+                    }
+
+                }
+                var neighborCopy0;
+                var neighborCopy1;
+                var neighborCopy2;
+                var neighborCopy3;
+                if(mat.data[0] > 2){
+                    assignEquivalenceClass(mat.data[0],i);
+                    neighborCopy0 = mat.data[0];
+                    connectedNeighborCount++;
+                }
+
+                if(mat.data[1] > 2){
+                    assignEquivalenceClass(mat.data[1],i);
+                    neighborCopy0 = mat.data[0];
+                    connectedNeighborCount++;
+                }
+
+                if(mat.data[2] > 2){
+                    assignEquivalenceClass(mat.data[2],i);
+                    connectedNeighborCount++;
+                }
+                if(mat.data[3] > 2){
+                    assignEquivalenceClass(mat.data[3],i);
+                    connectedNeighborCount++;
+                }
+
+
+               // var minNeighbor = Math.min(mat.data[0],Math.min(mat.data[1],Math.min(mat.data[2],mat.data[3])));
+
+                if( connectedNeighborCount == 0){
+                    labelIndex++;
+                    assignEquivalenceClass(labelIndex,i);
+                }
+            }
         }
     }
-    this.data = result;
-    return this;
 
-}
+    /*** second pass . consolidates labels ***/
 
-Morph.prototype.drawMatrixForIndexDebug = function(ind,d,context){
-    if(!d)d = 3;
-    var mat = new StructuringElement(d,0);
-    var halfDim = Math.floor(d / 2);
-    var upperLeft = ((ind - (this.width * halfDim))) - 1;
+    var connectedSegments = new Contours();;
 
-    var count = 0;
-    for(var x = 0; x < d * d; x++){
+        for(var y = 1; y < this.height - 1; y++){
+    for(var x = 1; x < this.width - 1; x++){
+            var i = x * this.height + y;
 
-        var j = upperLeft + (x % d) + this.width * Math.floor(x / d);
-        //context.fillRect(j)
-        if(j < this.data.length && j >= 0){
-            mat.data[count] = this.data[j];
+            if(copy.data[i] > 0){
+                copy.data[i] = equivalenceClasses[String(copy.data[i])]
+                if(!(connectedSegments.contours[String(equivalenceClasses[String(copy.data[i])])] instanceof Array)){
+                    connectedSegments.contours[String(equivalenceClasses[String(copy.data[i])])] = [[(2.0*x)/this.width,(2.0*y)/this.height]]
+                }
+                else{
+                    connectedSegments.contours[String(equivalenceClasses[String(copy.data[i])])].push([(2.0*x)/this.width,(2.0*y)/this.height])
+                }
+            }
         }
-        count++;
     }
-    return mat;
+    return [copy,labelIndex,connectedSegments];
 }
 
-Morph.prototype.constructMatrixForIndex = function(ind,d){
-    if(!d)d = 3;
-    var mat = new StructuringElement(d,0);
-    var halfDim = Math.floor(d / 2);
-    var upperLeft = ((ind - (this.height * halfDim))) - 1;
-
-    var count = 0;
-    for(var x = 0; x < d * d; x++){
-
-        var j = upperLeft + (x % d) + this.height * Math.floor(x / d);
-        if(j < this.data.length && j >= 0){
-            mat.data[count] = this.data[j];
+Morph.prototype.printDataAsMatrix = function(){
+     for(var y = 0; y < this.height ; y++){
+        var str = ""
+        for(var x = 0; x < this.width; x++){
+            var i = y * this.width + x;
+            str += this.data[i] + '  '
         }
-        count++;
-    }
-    return mat;
+        console.log(str)
+     }
 }
+
+Morph.prototype.iterativeThinning = function(iterations){
+    var hitmiss = new Morph(this.height,this.width,this.data);
+    var copy = new Morph(this.height,this.width,this.data);
+    hitmiss.data = hitmiss.hitMissTransform();
+    var c = 0;
+    while(c < iterations){
+        copy.subtract(hitmiss);
+        hitmiss.data = copy.hitMissTransform();
+        c++;
+    }
+    this.data = copy.data;
+}
+
 
 morphFromContext = function(context){
     var data = this.createImageData(context.width,context.height);
@@ -242,8 +354,28 @@ morphFromContext = function(context){
 
 SECheck = function(el){
     if(!(el instanceof StructuringElement)){
-        throw 'MORPH_TYPE_ERROR: input must be a StructuringElement';
+        throw 'MORPH_TYPE_ERROR: input must be a "StructuringElement"';
         return;
     }
 }
 
+MorphCheck = function(mo){
+    if(!(mo instanceof Morph)){
+       throw 'MORPH_TYPE_ERROR: input must be a "Morph" object';
+       return;
+    }
+}
+
+Array.prototype.compare = function (array) {
+    // if the other array is a false value, return
+
+    if(this.length == array.length){
+        for (var i = 0; i < Math.max(this.length, array.length); i++) {
+            if(this[i] != array[i])return false;
+        }
+    }
+    else{
+        return false;
+    }
+    return true;
+}

@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>For The Swarm!</title>
+<link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Ubuntu+Mono">
+<link rel="shortcut icon" href="/images/favicon.ico" />
+
+<script>
+    (function (i, s, o, g, r, a, m) {
+        i['GoogleAnalyticsObject'] = r;
+        i[r] = i[r] || function () {
+            (i[r].q = i[r].q || []).push(arguments)
+        }, i[r].l = 1 * new Date();
+        a = s.createElement(o),
+                m = s.getElementsByTagName(o)[0];
+        a.async = 1;
+        a.src = g;
+        m.parentNode.insertBefore(a, m)
+    })(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
+
+    ga('create', 'UA-45738083-1', 'somatostat.in');
+    ga('send', 'pageview');
+
+</script>
+<style>
+
+    #canvas {
+        position: absolute;
+        top: 0;
+        z-index: 1;
+    }
+
+    #videoCanvas {
+        visibility: hidden;
+        position: absolute;
+        left: 0;
+        top: 0;
+
+        z-index: 500;
+    }
+
+    .instructions {
+        margin-right: 15px;;
+        width: 280px;
+        height: 200px;
+        font-family: Ubuntu Mono;
+        float: right;
+        font-size: 12px;;
+        z-index: 2;
+        position: relative;;
+    }
+
+    .slider{
+        width:170px;
+       ;
+        height: 25px;
+        float: right;
+        margin: 5px;
+        margin-top: -15px;
+        border-bottom: solid 1px black;
+
+    }
+    #frictionSlider{
+        width:170px;
+       ;
+        height: 25px;
+        float: right;
+        margin: 5px;
+        margin-top: -15px;
+        border-bottom: solid 1px black;
+        z-index: -500;
+
+    }
+    .tickmark{
+        height: 25px;
+        width: 1px;
+        top: 7px;
+        background: red;
+        left: 30px;
+        position: relative;
+    }
+    #defaults{
+        color: red;
+        border: solid 1px black;
+        width:100px;
+        padding:4px;
+    }
+    #defaults:hover{
+        background-color: grey;
+        cursor: crosshair;
+    }
+</style>
+<canvas id="videoCanvas">
+</canvas>
+
+<div class = "instructions">
+    <br> <br> <br><br><br>
+
+    What's going on here?<br><br>
+
+    This is an attempt at emulating organic scribbles and strokes. The primary goal was to create a rendering process such that the output could not easily
+    be identified as the work of a computer. Makes use of morph.js and swarm.js, two javascript tools I built.
+    <br><br><br>
+    These parameters control the rendering style: <br> <br> <br>
+
+     <div style="color: red;">randomness
+        <div class = "slider" id = "randomnessSlider">
+           <div class = "tickmark" id = "randomnessTick"></div>
+        </div>
+     </div>
+     <br>
+     <br>
+     <br>
+
+    <div style="color: red;">gravity
+       <div class = "slider" id = "gravitySlider">
+           <div class = "tickmark" id = "gravityTick"></div>
+       </div>
+     </div>
+    <br>
+    <br>
+    <br>
+
+    <div style="color: red;">friction
+       <div id =  "frictionSlider">
+           <div class = "tickmark" id = "frictionTick"></div>
+       </div>
+    </div>
+    <br>
+       <br>
+       <br>   <br>
+        <div id = "defaults">Default Settings</div>
+
+
+</div>
+
+<canvas id="canvas">
+
+</canvas>
+
+<div style="position: absolute; top: 50px; left: 600px; display:none">
+    <video id='video' autoplay></video>
+</div>
+
+<script src="http://d3js.org/d3.v2.min.js?2.9.1"></script>
+<script src="http://code.jquery.com/jquery-1.9.1.js"></script>
+
+<script type="text/javascript" src="../_videoCapture.js"></script>
+<script type="text/javascript" src="../morph.js"></script>
+<script type="text/javascript" src="../swarm.js"></script>
+<!--<script type="text/javascript" src="morphtests.js"></script>-->
+<script>
+
+
+
+var object = document.getElementById('div5')
+
+
+
+
+var wid = window.innerWidth,
+        hei = window.innerHeight,
+        angle = 2 * Math.PI;
+var cursorX = 0;
+var cursorY = 0;
+var mouseActive = true;
+
+
+//////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////buttons//////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////
+//////music
+
+var dilateTimes = 0;
+
+var erodeTimes = 0;
+
+
+var x,y;
+
+x = function(x0){
+    return x0 * window.innerWidth
+}
+y = function(y0){
+    return y0 * window.innerHeight
+}
+
+
+
+var time0 = Date.now(),
+        time1;
+var counter = 0;
+
+var currentCenter = [0.5, 0.5, 0.0];
+var prevIndex = [-1];
+var highlightSwarmCenter = [0.5, 0.5];
+var unitv = [0, 0];
+
+var colors = [];
+for(var k = 0; k <2000; k++){
+    colors.push("rgba(" + Math.floor(Math.random() * 256) + ","+ Math.floor(Math.random() * 256) + "," + Math.floor(Math.random() * 256) + ",1)");
+}
+
+$(document).keydown(function (e) {
+    if (e.keyCode == 83) {
+        dilateTimes ++;
+    }
+    if (e.keyCode == 65) {
+        dilateTimes --;
+    }
+    if (e.keyCode == 68) {
+        erodeTimes ++;
+    }
+    if (e.keyCode == 70) {
+        erodeTimes --;
+    }
+    if (e.keyCode == 80 && videoAccepted) {
+        drawCentroids = !drawCentroids;
+    }
+    if (e.keyCode == 73) {
+    }
+    if (e.keyCode == 79) {
+    }
+    if (e.keyCode == 81) {
+    }
+    if (e.keyCode == 71) {
+
+    }
+});
+var mouseDown = false;
+var frictionTick = document.getElementById("frictionTick");
+
+var canvas = d3.select("#canvas")
+        .attr("width", window.innerWidth)
+        .attr("height", window.innerHeight)
+        .on("mousemove", function () {
+
+            if (mouseActive) {
+
+                cursorX = d3.mouse(this)[0] / wid;
+                cursorY = d3.mouse(this)[1] / hei;
+
+            }
+            else {
+                //set cursor var to be too far to have any effect
+                cursorX = cursorY = 1000;
+            }
+        })
+
+d3.select("canvas").append("a")
+        .attr("class", "music")
+        .attr("xlink:href", "http://soundcloud.com/")
+        .append("rect");
+
+var music = d3.select("canvas").append("music");
+var context = canvas.node().getContext("2d");
+
+
+
+var videoAccepted;
+
+var drawCentroids = false;
+
+var videoCapture = new VideoCapture(function () {
+    selection = false;
+    videoAccepted = true;
+    thresh = 50;
+});
+resolution = 1;
+thresh = 50;
+
+mouseActive = true;
+
+context.lineWidth = 1;
+context.strokeWidth = 1.9;
+
+context.fillStyle = "black";
+
+var svg = d3.select("canvas")
+        .append("svg")
+        .attr("width", wid)
+        .attr("height", hei)
+        .attr("class", "PiYG")
+        .on("mousemove", function () {
+            var m = d3.mouse(this);
+            mouse[0] = m[0];
+            mouse[1] = m[1];
+        })
+
+
+var t = 0
+var mousedown;
+
+d3.select("#frictionSlider")
+       .on("mousemove",function(d){
+
+            d3.event.preventDefault();
+            d3.event.stopPropagation();
+            if(mousedown){
+                frictionTick.style.left =  d3.mouse(this)[0] + 'px'
+                artists.gravity = setScaledFriction( d3.mouse(this)[0] / 170)
+            }
+       })
+       .on("mousedown",function(){
+            d3.event.preventDefault();
+            d3.event.stopPropagation();
+            frictionTick.style.left =  d3.mouse(this)[0] + 'px'
+            mousedown = true;
+       })
+       .on("mouseup",function(){
+            mousedown = false;
+       })
+
+d3.select("#gravitySlider")
+       .on("mousemove",function(d){
+
+            d3.event.preventDefault();
+            d3.event.stopPropagation();
+            if(mousedown){
+                gravityTick.style.left =  d3.mouse(this)[0] + 'px'
+                artists.gravity = setScaledGravity( d3.mouse(this)[0] / 170)
+            }
+       })
+       .on("mousedown",function(){
+            d3.event.preventDefault();
+            d3.event.stopPropagation();
+            gravityTick.style.left =  d3.mouse(this)[0] + 'px'
+            mousedown = true;
+       })
+       .on("mouseup",function(){
+            mousedown = false;
+       })
+
+d3.select("#randomnessSlider")
+       .on("mousemove",function(d){
+
+            d3.event.preventDefault();
+            d3.event.stopPropagation();
+            if(mousedown){
+                randomnessTick.style.left =  d3.mouse(this)[0] + 'px'
+                artists.randomness = setScaledRandomness( d3.mouse(this)[0] / 170)
+            }
+       })
+       .on("mousedown",function(){
+            d3.event.preventDefault();
+            d3.event.stopPropagation();
+            randomnessTick.style.left =  d3.mouse(this)[0] + 'px'
+            mousedown = true;
+       })
+       .on("mouseup",function(){
+            mousedown = false;
+       })
+       .on("mouseout",function(){
+            mouseDown = false;
+        })
+
+d3.select("#defaults")
+        .on("mouseup", function(){
+            artists.restoreState();
+            setToPresetWithControls(artists.gravity, artists.friction, artists.randomness);
+        })
+
+
+
+
+var artists = new Swarm(context)
+
+
+artists.insects = []
+
+while(artists.insects.length < 20   ){
+                    artists.addMember([0.5,0.5]);
+                  }
+
+artists.randomness = 0.0005;
+artists.frightfulness  = 0;
+artists.currentMode = SWARM_DYNAMIC_CENTROIDS_RANSAC;
+
+$(document).ready(function () {
+    artists.saveState();
+    setToPresetWithControls(artists.gravity, artists.friction, artists.randomness);
+})
+
+
+var setScaledRandomness = function(measure){
+    return measure * 0.004;
+}
+
+var setScaledFriction = function(measure){
+    return measure * 0.4;
+}
+
+var setScaledGravity = function(measure){
+    return measure * 0.1;
+}
+
+var setToPresetWithControls = function(gravity,friction,randomness){
+    artists.gravity = gravity;
+    artists.friction = friction;
+    artists.randomness = randomness;
+    gravityTick.style.left = (gravity / 0.1) * 170 + "px";
+    frictionTick.style.left = (friction / 0.4) * 170 + "px";
+    randomnessTick.style.left = (randomness / 0.004) * 170 + "px";
+}
+///////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////ANIMATION TIMER////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////
+
+var animate = function () {
+
+    context.fillStyle = "rgba(255, 255, 255, 1)";
+    context.fillRect(0, 0, window.innerWidth, $(document).scrollTop() + window.innerHeight);
+    context.fillStyle = "rgba(0, 0, 0, 1)";
+    counter = counter + 1;
+    drawBits(bits);
+    requestAnimationFrame(animate);
+};
+
+animate();
+
+
+function drawBits(bb) {
+    if(bb){
+       resolution = 1;
+
+       var mo = new Morph(globalH , globalW ,bb);
+//       testMorph2 = new Morph(10,10,[0,0,0,0,0,0,0,0,0,0,
+//                                         0,0,0,1,1,1,1,1,1,1,
+//                                         0,0,0,0,0,0,0,0,0,0,
+//                                         0,0,1,0,0,0,0,0,0,0,
+//                                         0,0,1,0,0,0,0,0,0,0,
+//                                         0,0,1,0,0,0,0,0,0,0,
+//                                         0,0,1,0,0,0,0,0,0,0,
+//                                         0,0,1,0,0,0,0,1,0,0,
+//                                         0,0,1,0,0,0,0,0,0,0,
+//                                         0,0,0,0,0,0,0,0,0,0]);
+
+
+       labeledComponentData = mo.labelConnectedComponents()
+
+
+       var w = labeledComponentData[0].width;
+       var h = labeledComponentData[0].height;
+       var conts = labeledComponentData[2];
+
+       var countr = 0;
+        if (drawCentroids) {
+            artists.centroids.forEach(function (c) {
+                context.fillRect(x(c[0]), y(c[1]), 5, 5);
+            })
+        }
+       conts.contours.forEach(function(contour){
+           var max = Math.min(contour.length +3, 170);
+
+           if(contour.length > 2 && artists.insects[0]){
+
+               artists.centroids = contour;
+                countr++;
+
+                var randi = Math.floor(Math.random()*contour.length);
+                artists.insects.forEach(function(insect){
+                    randi = Math.floor(Math.random()*contour.length);
+                     insect.xloc = contour[randi][0]
+                     insect.yloc = contour[randi][1]
+                     insect.centroid = contour[randi]
+                     insect.yloc = contour[randi][1]
+                     insect.xvel = (Math.random() * 0.002) - 0.001;
+                     insect.yvel = (Math.random() * 0.002) - 0.001;;
+                })
+                 for(var k = 0; k < max; k++){
+
+                    artists.nextIteration(cursorX,cursorY);
+
+                }
+                context.fillStyle = colors[conts.contours.indexOf(contour)]
+           }
+       })
+
+
+
+    }
+}
+
+
+</script>
