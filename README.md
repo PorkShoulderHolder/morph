@@ -78,7 +78,7 @@ Closing is the dilation operation followed by the erosion operation and dependin
     
 effect:
 
-![ScreenShot](http://patentimages.storage.googleapis.com/WO2005107581A2/imgf000071_0001.png)
+![ScreenShot](http://homepages.inf.ed.ac.uk/rbf/HIPR2/figs/openbin.gif)
     
 removing a small object with opening:
     
