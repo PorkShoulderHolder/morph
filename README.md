@@ -31,7 +31,7 @@ Basic functionality in Morphological image processing (MIP) is defined by the er
 
     morph.erodeWithElement()
 
-when no structuring element argument is provided all operations default to using a default 3x3 rectangular element that looks like this:
+when no structuring element argument is provided all operations default to using a default 3x3 rectangular structuring element that looks like this:
 
     [1,1,1,
      1,1,1,
@@ -41,6 +41,13 @@ And will provide results like this:
 
 ![ScreenShot](https://www.cs.auckland.ac.nz/courses/compsci773s1c/lectures/ImageProcessing-html/mor-pri-erosion.gif)
 
+Users can select from other predefined structuring elements like MORPH_3x3_CROSS_ELEMENT, or define their own structuring elements:
+
+    var el = new StructuringElement(3,[1,1,1,
+                                       0,1,0,
+                                       0,0,0])
+                                       
+Where the 1st argument is the dimension of the element. 
 
 ###Dilation
 
