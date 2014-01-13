@@ -3,6 +3,8 @@ morph.js
 
 ###Morphological image processing for javascript.
 
+The purpose of morph.js is to make the low level image processing and computer vision functions defined by mathematical morphology available for use with preproccessed input from the webcam via window.getUserMedia(). Morph.js deals with binary images, in other words, all operations are done on arrays of ones and zeroes. 
+
 ###Mathematical Morphology as described by wikipedia:
 
 Mathematical morphology (MM) is a theory and technique for the analysis and processing of geometrical structures, based on set theory, lattice theory, topology, and random functions. MM is most commonly applied to digital images, but it can be employed as well on graphs, surface meshes, solids, and many other spatial structures.
