@@ -1,7 +1,7 @@
 morph.js
 ========
 
-#Morphological image processing for javascript.
+###Morphological image processing for javascript.
 
 ###Mathematical Morphology as described by wikipedia:
 
