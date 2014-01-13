@@ -49,6 +49,7 @@ Users can select from other predefined structuring elements like MORPH_3x3_CROSS
                                        
 Where the 1st argument is the dimension of the element. 
 
+
 ###Dilation
 
     morph.dilateWithElement()
@@ -59,6 +60,29 @@ Will provide results like this:
 
 Example usage: http://somatostat.in/swarmSandbox.html
 
+
+###Closing
+
+In image processing, closing is, together with opening, the basic workhorse of morphological noise removal. Opening removes small objects, while closing removes small holes [wikipedia]. 
+
+    morph.closingWithElement()
+
+Closing is the dilation operation followed by the erosion operation and depending on the structuring elements used, gives an effect similar to below. 
+
+![ScreenShot](http://homepages.inf.ed.ac.uk/rbf/HIPR2/figs/closebin.gif)
+
+
+###Opening
+
+    morph.openingWithElement()
+    
+effect:
+
+![ScreenShot](http://patentimages.storage.googleapis.com/WO2005107581A2/imgf000071_0001.png)
+    
+removing a small object with opening:
+    
+![ScreenShot](http://patentimages.storage.googleapis.com/WO2005107581A2/imgf000071_0001.png)
 
 
 
