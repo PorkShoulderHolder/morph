@@ -19,12 +19,14 @@ MM was originally developed for binary images, and was later extended to graysca
 To initialize a morph object:
     
     var height = 200
-    var width = width
+    var width = 270
     var morph = new Morph(height, width, bits)
 
-where bits is an array of 1s and 0s
+where bits is an array of 1s and 0s with length 54,000, usually derived from some image.
 
-The some basic functionality in Morphological image processing (MIP) is defined by the dilate and erode operations.
+Basic functionality in Morphological image processing (MIP) is defined by the dilate and erode operations.
+
+
 
 Example usage: http://somatostat.in/swarmSandbox.html
 
