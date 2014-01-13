@@ -121,13 +121,22 @@
     <br>
 
     <div style="color: red;">friction
-       <div id =  "frictionSlider">
+       <div class ="slider" id =  "frictionSlider">
            <div class = "tickmark" id = "frictionTick"></div>
        </div>
     </div>
     <br>
        <br>
-       <br>   <br>
+       <br>
+    <div style="color: red;">sensitivity
+       <div class ="slider" id =  "sensitivitySlider">
+           <div class = "tickmark" id = "sensitivityTick"></div>
+       </div>
+    </div>
+    <br>
+       <br>
+       <br>
+    <br>
         <div id = "defaults">Default Settings</div>
 
 
@@ -352,11 +361,33 @@ d3.select("#randomnessSlider")
        .on("mouseout",function(){
             mouseDown = false;
         })
+d3.select("#sensitivitySlider")
+       .on("mousemove",function(d){
+
+            d3.event.preventDefault();
+            d3.event.stopPropagation();
+            if(mousedown){
+                sensitivityTick.style.left =  d3.mouse(this)[0] + 'px'
+                videoCapture.idealBitPrecentage = 0.07 * d3.mouse(this)[0] / 170
+            }
+       })
+       .on("mousedown",function(){
+            d3.event.preventDefault();
+            d3.event.stopPropagation();
+            sensitivityTick.style.left =  d3.mouse(this)[0] + 'px'
+            mousedown = true;
+       })
+       .on("mouseup",function(){
+            mousedown = false;
+       })
+       .on("mouseout",function(){
+            mouseDown = false;
+        })
 
 d3.select("#defaults")
         .on("mouseup", function(){
             artists.restoreState();
-            setToPresetWithControls(artists.gravity, artists.friction, artists.randomness);
+            setToPresetWithControls(artists.gravity, artists.friction, artists.randomness, 0.017);
         })
 
 
@@ -377,7 +408,7 @@ artists.currentMode = SWARM_DYNAMIC_CENTROIDS_RANSAC;
 
 $(document).ready(function () {
     artists.saveState();
-    setToPresetWithControls(artists.gravity, artists.friction, artists.randomness);
+    setToPresetWithControls(artists.gravity, artists.friction, artists.randomness, 0.017);
 })
 
 
@@ -393,13 +424,15 @@ var setScaledGravity = function(measure){
     return measure * 0.1;
 }
 
-var setToPresetWithControls = function(gravity,friction,randomness){
+var setToPresetWithControls = function(gravity,friction,randomness,sensitivity){
     artists.gravity = gravity;
     artists.friction = friction;
     artists.randomness = randomness;
+    videoCapture.idealBitPrecentage = sensitivity;
     gravityTick.style.left = (gravity / 0.1) * 170 + "px";
     frictionTick.style.left = (friction / 0.4) * 170 + "px";
     randomnessTick.style.left = (randomness / 0.004) * 170 + "px";
+    sensitivityTick.style.left = (sensitivity / 0.07) * 170 + "px";
 }
 ///////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////ANIMATION TIMER////////////////////////////////////
@@ -434,7 +467,7 @@ function drawBits(bb) {
 //                                         0,0,1,0,0,0,0,0,0,0,
 //                                         0,0,0,0,0,0,0,0,0,0]);
 
-
+      // mo.openingWithElement();
        labeledComponentData = mo.labelConnectedComponents()
 
 
