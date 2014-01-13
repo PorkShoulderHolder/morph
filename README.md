@@ -26,6 +26,17 @@ where bits is an array of 1s and 0s with length (height * width), usually derive
 
 Basic functionality in Morphological image processing (MIP) is defined by the dilate and erode operations.
 
+#Erode
+
+    morph.erodeWithElement()
+
+when no structuring element argument is provided all operations default to using a default 3x3 rectangular element that looks like this:
+
+    [1,1,1,
+     1,1,1,
+     1,1,1]
+     
+
 ![ScreenShot](https://www.cs.auckland.ac.nz/courses/compsci773s1c/lectures/ImageProcessing-html/mor-pri-erosion.gif)
 
 
