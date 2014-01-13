@@ -24,9 +24,10 @@ To initialize a morph object:
 
 where bits is an array of 1s and 0s with length (height * width), usually derived from some image.
 
-Basic functionality in Morphological image processing (MIP) is defined by the dilate and erode operations.
+Basic functionality in Morphological image processing (MIP) is defined by the erode and dilate operations.
 
-#Erode
+    
+###Erosion
 
     morph.erodeWithElement()
 
@@ -36,9 +37,18 @@ when no structuring element argument is provided all operations default to using
      1,1,1,
      1,1,1]
      
+And will provide results like this:     
 
 ![ScreenShot](https://www.cs.auckland.ac.nz/courses/compsci773s1c/lectures/ImageProcessing-html/mor-pri-erosion.gif)
 
+
+###Dilation
+
+    morph.dilateWithElement()
+
+Will provide results like this:
+
+![ScreenShot](http://angelinagokhale.files.wordpress.com/2013/04/diltbin.gif)
 
 Example usage: http://somatostat.in/swarmSandbox.html
 
