@@ -22,11 +22,12 @@ To initialize a morph object:
     var width = 270
     var morph = new Morph(height, width, bits)
 
-where bits is an array of 1s and 0s with length 54,000, usually derived from some image.
+where bits is an array of 1s and 0s with length (height * width), usually derived from some image.
 
 Basic functionality in Morphological image processing (MIP) is defined by the dilate and erode operations.
 
-https://www.cs.auckland.ac.nz/courses/compsci773s1c/lectures/ImageProcessing-html/mor-pri-erosion.gif
+![ScreenShot](https://www.cs.auckland.ac.nz/courses/compsci773s1c/lectures/ImageProcessing-html/mor-pri-erosion.gif)
+
 
 Example usage: http://somatostat.in/swarmSandbox.html
 
