@@ -88,8 +88,28 @@ removing a small object with opening:
 
 ###Hit-Miss Transform
 
-The hit-miss transform can be described as a very simplistic corner detector.  Here is the effect:
+The hit-miss transform can be described as a very simplistic corner detector. In morph.js you cannot specify the structuring elements used in the hit-miss transform.   
+
+    morph.hitMissTransform()
+
+Here is the effect:
 
 ![ScreenShot](http://www.cse.dmu.ac.uk/~sexton/WWWPages/HIPR/figs/hamcrn.gif)
+
+
+###Iterative Thinning
+
+Thinning is the act of iteratively subtracting the hit miss transform from the image it was generated from. 
+    
+    var iterations = 6;
+    morph.iterativeThinning(iterations);
+
+If you set the parameter high enough then it will eventually converge to the 'skeletonization' of the image, shown below.
+
+![ScreenShot](http://homepages.inf.ed.ac.uk/rbf/HIPR2/figs/thnskxmp.gif)
+
+Be aware: the time complexity of reaching a complete skeletonization is prohibitive for most real-time processing applications.
+
+
 
 
