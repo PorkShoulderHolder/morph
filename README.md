@@ -86,5 +86,10 @@ removing a small object with opening:
 
 
 
+###Hit-Miss Transform
+
+The hit-miss transform can be described as a very simplistic corner detector.  Here is the effect:
+
+![ScreenShot](http://www.cse.dmu.ac.uk/~sexton/WWWPages/HIPR/figs/hamcrn.gif)
 
 
