@@ -78,29 +78,30 @@
         left: 30px;
         position: relative;
     }
-    #defaults{
+    .butt{
         color: red;
         border: solid 1px black;
-        width:100px;
         padding:4px;
     }
-    #defaults:hover{
+    .butt:hover{
         background-color: grey;
         cursor: crosshair;
     }
+
 </style>
 <canvas id="videoCanvas">
 </canvas>
 
 <div class = "instructions">
-    <br> <br> <br><br><br>
 
-    What's going on here?<br><br>
+
+   <h3> What's going on here?</h3>
+
 
     This is an attempt at emulating organic scribbles and strokes. The primary goal was to create a rendering process such that the output could not easily
-    be identified as the work of a computer. Makes use of morph.js and swarm.js, two javascript tools I built.
-    <br><br><br>
-    These parameters control the rendering style: <br> <br> <br>
+    be identified as the work of a computer. Makes use of <a href = "https://github.com/PorkShoulderHolder/morph">morph.js</a> and <a href = "https://github.com/PorkShoulderHolder/swarm">swarm.js</a>, two javascript tools I built.
+    <br><br>
+     <h3> These parameters control the rendering style:</h3> <br>
 
      <div style="color: red;">randomness
         <div class = "slider" id = "randomnessSlider">
@@ -108,7 +109,7 @@
         </div>
      </div>
      <br>
-     <br>
+
      <br>
 
     <div style="color: red;">gravity
@@ -117,7 +118,7 @@
        </div>
      </div>
     <br>
-    <br>
+
     <br>
 
     <div style="color: red;">friction
@@ -126,20 +127,32 @@
        </div>
     </div>
     <br>
-       <br>
+
        <br>
     <div style="color: red;">sensitivity
        <div class ="slider" id =  "sensitivitySlider">
            <div class = "tickmark" id = "sensitivityTick"></div>
        </div>
     </div>
-    <br>
-       <br>
-       <br>
-    <br>
-        <div id = "defaults">Default Settings</div>
+        <br>
+        <br>
 
 
+    <a class = "butt" id = "defaults">Default Settings</a>
+        <br>
+        <br>
+        <br>
+        <h3> Record what you see, max 100 frames. <a href = "https://github.com/antimatter15/whammy">whammy.js</a></h3>
+        <br>
+
+    <a class = "butt" id = "record">Record</a>
+        <br>
+        <br>
+        <br>
+    <a class = "butt" id = "download" target="_blank">View</a><a> (right click to download as .webm) </a>
+        <br>
+        <br>
+        <br>
 </div>
 
 <canvas id="canvas">
@@ -155,6 +168,7 @@
 
 <script type="text/javascript" src="../_videoCapture.js"></script>
 <script type="text/javascript" src="../morph.js"></script>
+<script type="text/javascript" src="../whammy.js"></script>
 <script type="text/javascript" src="../swarm.js"></script>
 <!--<script type="text/javascript" src="morphtests.js"></script>-->
 <script>
@@ -389,13 +403,22 @@ d3.select("#defaults")
             artists.restoreState();
             setToPresetWithControls(artists.gravity, artists.friction, artists.randomness, 0.017);
         })
-
-
-
+d3.select("#record")
+        .on("mouseup", function(){
+            if(framesLeft > 0){
+                framesLeft = 0;
+                encodeAndSaveSrc();
+            }
+            else{
+                framesLeft = 100;
+                d3.select("#record").html("Stop")
+            }
+        })
 
 var artists = new Swarm(context)
 
-
+var encoder;
+var framesLeft = 0;
 artists.insects = []
 
 while(artists.insects.length < 20   ){
@@ -408,9 +431,19 @@ artists.currentMode = SWARM_DYNAMIC_CENTROIDS_RANSAC;
 
 $(document).ready(function () {
     artists.saveState();
+
     setToPresetWithControls(artists.gravity, artists.friction, artists.randomness, 0.017);
+
+    encoder = new Whammy.Video(10);
 })
 
+encodeAndSaveSrc = function(){
+    var vid = encoder.compile()
+    var url = (window.webkitURL || window.URL).createObjectURL(vid);
+    d3.select("#download").attr("href",url).attr("display","inline")
+    d3.select("#record").html("Record")
+    encoder.frames = [];
+}
 
 var setScaledRandomness = function(measure){
     return measure * 0.004;
@@ -445,6 +478,15 @@ var animate = function () {
     context.fillStyle = "rgba(0, 0, 0, 1)";
     counter = counter + 1;
     drawBits(bits);
+    if(framesLeft > 0){
+
+        encoder.add(context);
+        framesLeft--;
+
+        if(framesLeft == 0){
+            encodeAndSaveSrc();
+        }
+    }
     requestAnimationFrame(animate);
 };
 
@@ -471,9 +513,9 @@ function drawBits(bb) {
        labeledComponentData = mo.labelConnectedComponents()
 
 
-       var w = labeledComponentData[0].width;
-       var h = labeledComponentData[0].height;
-       var conts = labeledComponentData[2];
+       var w = labeledComponentData.labeledMorph.width;
+       var h = labeledComponentData.labeledMorph.height;
+       var conts = labeledComponentData.contours;
 
        var countr = 0;
         if (drawCentroids) {
@@ -481,7 +523,7 @@ function drawBits(bb) {
                 context.fillRect(x(c[0]), y(c[1]), 5, 5);
             })
         }
-       conts.contours.forEach(function(contour){
+       conts.forEach(function(contour){
            var max = Math.min(contour.length +3, 170);
 
            if(contour.length > 2 && artists.insects[0]){
@@ -495,7 +537,6 @@ function drawBits(bb) {
                      insect.xloc = contour[randi][0]
                      insect.yloc = contour[randi][1]
                      insect.centroid = contour[randi]
-                     insect.yloc = contour[randi][1]
                      insect.xvel = (Math.random() * 0.002) - 0.001;
                      insect.yvel = (Math.random() * 0.002) - 0.001;;
                 })
@@ -504,7 +545,7 @@ function drawBits(bb) {
                     artists.nextIteration(cursorX,cursorY);
 
                 }
-                context.fillStyle = colors[conts.contours.indexOf(contour)]
+                context.fillStyle = colors[conts.indexOf(contour)]
            }
        })
 

@@ -31,7 +31,6 @@ var StructuringElement = function(d,data){
 
 var Contours = function(){
     this.contours = [[]];
-
 }
 
 Contours.prototype.totalPoints = function(){
@@ -319,7 +318,7 @@ Morph.prototype.labelConnectedComponents = function(){
             }
         }
     }
-    return [copy,labelIndex,connectedSegments];
+    return {labeledMorph:copy,maxLabel:labelIndex,contours:connectedSegments.contours};
 }
 
 Morph.prototype.printDataAsMatrix = function(){

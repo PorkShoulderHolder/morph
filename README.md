@@ -3,6 +3,8 @@ morph.js
 
 ###Morphological image processing for javascript.
 
+
+
 ###Mathematical Morphology as described by wikipedia:
 
 Mathematical morphology (MM) is a theory and technique for the analysis and processing of geometrical structures, based on set theory, lattice theory, topology, and random functions. MM is most commonly applied to digital images, but it can be employed as well on graphs, surface meshes, solids, and many other spatial structures.
