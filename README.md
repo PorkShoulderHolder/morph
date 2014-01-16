@@ -112,4 +112,7 @@ Be aware: the time complexity of reaching a complete skeletonization is prohibit
 
 
 
+For more info about morphological image proccessing, check out this site, which I referenced extensively above: http://homepages.inf.ed.ac.uk/rbf/HIPR2/morops.htm 
+
+
 
