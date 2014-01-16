@@ -110,6 +110,21 @@ If you set the parameter high enough then it will eventually converge to the 'sk
 
 Be aware: the time complexity of reaching a complete skeletonization is prohibitive for most real-time processing applications.
 
+###Connected Component Labeling
+
+    var componentData = morph.labelConnectedComponents()
+    componentData.contours.forEach(function(contour){
+    
+        console.log(contour)
+        
+        // returns an array of normalized x,y values [ [0.1,0.2], [0.8,0.1], .... ] 
+
+    })
+    
+
+This is (in my opinion) the most useful algo in morph.js. Given a binary image, it will label connected sections with integers (not neccesarily consecutive). It is an implementation of the "two pass" algorithm described on wikipedia (http://en.wikipedia.org/wiki/Connected-component_labeling), and labels regions that are "8-connected". It is also relatively speedy, running linearly wrt the number of pixels. Using this data you can color a bitmap image like this:
+
+![ScreenShot](http://upload.wikimedia.org/wikipedia/commons/thumb/a/ae/Screenshot-Figure_1.png/800px-Screenshot-Figure_1.png)
 
 
 For more info about morphological image proccessing, check out this site, which I referenced extensively above: http://homepages.inf.ed.ac.uk/rbf/HIPR2/morops.htm 
