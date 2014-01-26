@@ -397,7 +397,7 @@ var animate = function () {
 animate();
 
 var timeDrawingFunction = function(len){
-    return Math.min(2*(len +13), 260);
+    return Math.min(len +18, 160);
 }
 
 d3.select("#frictionSlider")
@@ -532,7 +532,7 @@ var framesLeft = 0;
 var dataArray = []
 artists.insects = []
 
-while(artists.insects.length < 1  ){
+while(artists.insects.length < 12  ){
                     artists.addMember([0.5,0.5]);
                   }
 artists.bugSize = 7;
