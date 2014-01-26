@@ -219,6 +219,21 @@ Morph.prototype.closingWithElement = function(el){
     this.dilateWithElement(el);
 }
 
+Morph.prototype.getSubImageInRect = function(top,left,height,width){
+    if(left + width > this.width || top + height > this.height){
+        throw "MORPH_SUBIMAGE_BOUND_ERROR: check subimage bounds)"
+    }
+    var startIndex = top * this.width + left;
+    var endIndex = (top + height) * this.width + (left + width)
+    var subImage = []
+    var i = startIndex
+    while(i < endIndex){
+        subImage.append(this.data.splice(i, i + width))
+        i += this.width
+    }
+    return subImage;
+}
+
 Morph.prototype.hitMissTransform = function(){
 
     var result = Array.apply(null, new Array(this.height * this.width)).map(Number.prototype.valueOf,0);
@@ -264,21 +279,15 @@ Morph.prototype.labelConnectedComponents = function(){
 
                 }
                 var neighborCopy0;
-                var neighborCopy1;
-                var neighborCopy2;
-                var neighborCopy3;
+
                 if(mat.data[0] > 2){
                     assignEquivalenceClass(mat.data[0],i);
-                    neighborCopy0 = mat.data[0];
                     connectedNeighborCount++;
                 }
-
                 if(mat.data[1] > 2){
                     assignEquivalenceClass(mat.data[1],i);
-                    neighborCopy0 = mat.data[0];
                     connectedNeighborCount++;
                 }
-
                 if(mat.data[2] > 2){
                     assignEquivalenceClass(mat.data[2],i);
                     connectedNeighborCount++;
@@ -287,10 +296,6 @@ Morph.prototype.labelConnectedComponents = function(){
                     assignEquivalenceClass(mat.data[3],i);
                     connectedNeighborCount++;
                 }
-
-
-               // var minNeighbor = Math.min(mat.data[0],Math.min(mat.data[1],Math.min(mat.data[2],mat.data[3])));
-
                 if( connectedNeighborCount == 0){
                     labelIndex++;
                     assignEquivalenceClass(labelIndex,i);
@@ -303,8 +308,8 @@ Morph.prototype.labelConnectedComponents = function(){
 
     var connectedSegments = new Contours();;
 
-        for(var y = 1; y < this.height - 1; y++){
-    for(var x = 1; x < this.width - 1; x++){
+    for(var y = 1; y < this.height - 1; y++){
+        for(var x = 1; x < this.width - 1; x++){
             var i = x * this.height + y;
 
             if(copy.data[i] > 0){

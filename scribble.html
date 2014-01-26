@@ -106,7 +106,7 @@
 
 
     This is an attempt at emulating organic scribbles and strokes. The primary goal was to create a rendering process such that the output could not easily
-    be identified as the work of a computer. Makes use of <a href = "https://github.com/PorkShoulderHolder/morph">morph.js</a> and <a href = "https://github.com/PorkShoulderHolder/swarm">swarm.js</a>, two javascript tools I built.
+    be identified as the work of a computer. Makes use of <a href = "https://github.com/PorkShoulderHolder/morph">morph.js</a> and <a href = "https://github.com/PorkShoulderHolder/swarm">swarm.js</a>, two javascript tools I built for things like this.
     <br><br>
      <h3> These parameters control the rendering style:</h3> <br>
 
@@ -145,18 +145,18 @@
         <br>
 
 
-    <a class = "butt" id = "defaults">Default Settings</a>
+    <a class = "butt" id = "ballpoint">Ballpoint</a> <a class = "butt" id = "felttipped">Felt-Tipped</a>
         <br>
         <br>
         <br>
-        <h3> Record what you see, max 100 frames. <a href = "https://github.com/antimatter15/whammy">whammy.js</a></h3>
+        <h3> Make a gif! - up to 150 frames. <a href = "http://jnordberg.github.io/gif.js/">gif.js</a></h3>
         <br>
 
     <a class = "butt" id = "record">Record</a>
         <br>
         <br>
         <br>
-    <a class = "butt" id = "download" target="_blank">View</a><a> (right click to download as .webm) </a>
+    <a class = "butt" id = "download" target="_blank">View</a><a> (right click to download your gif) </a>
         <br>
         <br>
         <br>
@@ -174,6 +174,8 @@
 <script src="http://code.jquery.com/jquery-1.9.1.js"></script>
 
 <script type="text/javascript" src="../_videoCapture.js"></script>
+<script type="text/javascript" src="gif.js"></script>
+<script type="text/javascript" src="gif.worker.js"></script>
 <script type="text/javascript" src="../morph.js"></script>
 <script type="text/javascript" src="../whammy.js"></script>
 <script type="text/javascript" src="../swarm.js"></script>
@@ -184,6 +186,7 @@
 
 var object = document.getElementById('div5')
 
+var cancelAnimationFrame = window.cancelAnimationFrame || window.mozCancelAnimationFrame || window.webkitCancelAnimationFrame;
 
 
 
@@ -195,6 +198,11 @@ var cursorY = 0;
 var mouseActive = true;
 
 
+var selectBarCentroids = function(fraction){
+    var barCentroids = [[0.45,0.5],[0.455,0.5],[0.46,0.5],[0.465,0.5],[0.47,0.5],[0.475,0.5],[0.48,0.5],[0.485,0.5],[0.49,0.5],[0.495,0.5],[0.5,0.5],[0.505,0.5],[0.51,0.5],[0.515,0.5],[0.520,0.5]]
+    var top = Math.round(fraction * barCentroids.length)
+    return barCentroids.slice(0,top);
+}
 //////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////buttons//////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -216,10 +224,28 @@ y = function(y0){
 
 
 
+function encode64(input) {
+	var output = "", i = 0, l = input.length,
+	key = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=",
+	chr1, chr2, chr3, enc1, enc2, enc3, enc4;
+	while (i < l) {
+		chr1 = input.charCodeAt(i++);
+		chr2 = input.charCodeAt(i++);
+		chr3 = input.charCodeAt(i++);
+		enc1 = chr1 >> 2;
+		enc2 = ((chr1 & 3) << 4) | (chr2 >> 4);
+		enc3 = ((chr2 & 15) << 2) | (chr3 >> 6);
+		enc4 = chr3 & 63;
+		if (isNaN(chr2)) enc3 = enc4 = 64;
+		else if (isNaN(chr3)) enc4 = 64;
+		output = output + key.charAt(enc1) + key.charAt(enc2) + key.charAt(enc3) + key.charAt(enc4);
+	}
+	return output;
+}
+
 var time0 = Date.now(),
         time1;
 var counter = 0;
-
 var currentCenter = [0.5, 0.5, 0.0];
 var prevIndex = [-1];
 var highlightSwarmCenter = [0.5, 0.5];
@@ -229,6 +255,31 @@ var colors = [];
 for(var k = 0; k <2000; k++){
     colors.push("rgba(" + Math.floor(Math.random() * 256) + ","+ Math.floor(Math.random() * 256) + "," + Math.floor(Math.random() * 256) + ",1)");
 }
+var gif
+$(document).ready(function () {
+    artists.saveState();
+    gif = new GIF({
+        workers: 16,
+        quality: 1000
+    })
+    var interval
+    gif.on('start',function(e){
+        d3.select("#record").html(0 + "%")
+
+
+    })
+    gif.on('progress', function(val){
+        d3.select("#record").html(Math.round(100 * val)  + "%")
+    })
+    gif.on('finished', function(blob) {
+        var url =URL.createObjectURL(blob);
+        d3.select("#download").attr("href",url).attr("display","inline")
+        d3.select("#record").html("Record")
+        animate();
+    });
+    setToPresetWithControls(artists.gravity, artists.friction, artists.randomness, 0.017);
+
+})
 
 $(document).keydown(function (e) {
     if (e.keyCode == 83) {
@@ -252,7 +303,7 @@ $(document).keydown(function (e) {
     }
     if (e.keyCode == 81) {
     }
-    if (e.keyCode == 71) {
+     if (e.keyCode == 71) {
 
     }
 });
@@ -319,6 +370,35 @@ var svg = d3.select("canvas")
 
 var t = 0
 var mousedown;
+
+var animationReq
+var animate = function () {
+
+    context.fillStyle = "rgba(255, 255, 255, 1)";
+    context.fillRect(0, 0, window.innerWidth, $(document).scrollTop() + window.innerHeight);
+    context.fillStyle = "rgba(0, 0, 0, 1)";
+    counter = counter + 1;
+    drawBits(bits);
+    animationReq = requestAnimationFrame(animate);
+    if(framesLeft > 0){
+
+        gif.addFrame( canvas.node(), {delay:100,copy:true})
+        framesLeft--;
+        if(framesLeft == 0){
+            gif.render()
+            cancelAnimationFrame(animationReq);
+        }
+    }
+
+
+
+};
+
+animate();
+
+var timeDrawingFunction = function(len){
+    return Math.min(2*(len +13), 260);
+}
 
 d3.select("#frictionSlider")
        .on("mousemove",function(d){
@@ -405,52 +485,63 @@ d3.select("#sensitivitySlider")
             mouseDown = false;
         })
 
-d3.select("#defaults")
+d3.select("#ballpoint")
         .on("mouseup", function(){
             artists.restoreState();
             setToPresetWithControls(artists.gravity, artists.friction, artists.randomness, 0.017);
+            timeDrawingFunction = function(len){
+                 return Math.min(len +23, 160);
+            }
+            while(artists.insects.length < 12){
+                artists.addMember();
+            }
+            artists.bugSize = 1;
         })
+d3.select("#felttipped")
+        .on("mouseup", function(){
+            artists.restoreState();
+            setToPresetWithControls(artists.gravity, artists.friction, artists.randomness, 0.017);
+            timeDrawingFunction = function(len){
+                 return Math.min(2*(len +18), 260);
+            }
+            while(artists.insects.length > 1){
+                artists.insects.pop()
+            }
+            artists.bugSize = 7;
+        })
+
 d3.select("#record")
         .on("mouseup", function(){
             if(framesLeft > 0){
                 framesLeft = 0;
-                encodeAndSaveSrc();
+                gif.render()
+                cancelAnimationFrame(animationReq)
+
             }
             else{
-                framesLeft = 100;
+
+
+                framesLeft = 150;
                 d3.select("#record").html("Stop")
             }
         })
 
 var artists = new Swarm(context)
 
-var encoder;
 var framesLeft = 0;
+var dataArray = []
 artists.insects = []
 
-while(artists.insects.length < 20   ){
+while(artists.insects.length < 1  ){
                     artists.addMember([0.5,0.5]);
                   }
-
+artists.bugSize = 7;
 artists.randomness = 0.0005;
 artists.frightfulness  = 0;
 artists.currentMode = SWARM_DYNAMIC_CENTROIDS_RANSAC;
+var worker;
 
-$(document).ready(function () {
-    artists.saveState();
 
-    setToPresetWithControls(artists.gravity, artists.friction, artists.randomness, 0.017);
-
-    encoder = new Whammy.Video(10);
-})
-
-encodeAndSaveSrc = function(){
-    var vid = encoder.compile()
-    var url = (window.webkitURL || window.URL).createObjectURL(vid);
-    d3.select("#download").attr("href",url).attr("display","inline")
-    d3.select("#record").html("Record")
-    encoder.frames = [];
-}
 
 var setScaledRandomness = function(measure){
     return measure * 0.004;
@@ -478,45 +569,12 @@ var setToPresetWithControls = function(gravity,friction,randomness,sensitivity){
 ////////////////////////////////////ANIMATION TIMER////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////
 
-var animate = function () {
-
-    context.fillStyle = "rgba(255, 255, 255, 1)";
-    context.fillRect(0, 0, window.innerWidth, $(document).scrollTop() + window.innerHeight);
-    context.fillStyle = "rgba(0, 0, 0, 1)";
-    counter = counter + 1;
-    drawBits(bits);
-    if(framesLeft > 0){
-
-        encoder.add(context);
-        framesLeft--;
-
-        if(framesLeft == 0){
-            encodeAndSaveSrc();
-        }
-    }
-    requestAnimationFrame(animate);
-};
-
-animate();
-
-
 function drawBits(bb) {
     if(bb){
        resolution = 1;
 
        var mo = new Morph(globalH , globalW ,bb);
-//       testMorph2 = new Morph(10,10,[0,0,0,0,0,0,0,0,0,0,
-//                                         0,0,0,1,1,1,1,1,1,1,
-//                                         0,0,0,0,0,0,0,0,0,0,
-//                                         0,0,1,0,0,0,0,0,0,0,
-//                                         0,0,1,0,0,0,0,0,0,0,
-//                                         0,0,1,0,0,0,0,0,0,0,
-//                                         0,0,1,0,0,0,0,0,0,0,
-//                                         0,0,1,0,0,0,0,1,0,0,
-//                                         0,0,1,0,0,0,0,0,0,0,
-//                                         0,0,0,0,0,0,0,0,0,0]);
 
-      // mo.openingWithElement();
        labeledComponentData = mo.labelConnectedComponents()
 
 
@@ -531,7 +589,8 @@ function drawBits(bb) {
             })
         }
        conts.forEach(function(contour){
-           var max = Math.min(contour.length +3, 170);
+
+           var max = timeDrawingFunction(contour.length);
 
            if(contour.length > 2 && artists.insects[0]){
 
