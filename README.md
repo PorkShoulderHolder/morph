@@ -124,7 +124,7 @@ Be aware: the time complexity of reaching a complete skeletonization is prohibit
     })
     
 
-This is (in my opinion) the most useful algo in morph.js. Given a binary image, it will label connected sections with integers (not neccesarily consecutive). It is an implementation of the "two pass" algorithm described on wikipedia (http://en.wikipedia.org/wiki/Connected-component_labeling), and labels regions that are "8-connected". It is also relatively speedy, running linearly wrt the number of pixels. Using this data you can color a bitmap image like this:
+This is (in my opinion) the most useful algo in morph.js. Given a binary image, it will label connected sections with integers (not neccesarily consecutive). It is an implementation of the "two pass" algorithm described on wikipedia (http://en.wikipedia.org/wiki/Connected-component_labeling), and labels regions that are "8-connected". It is also relatively speedy, running linearly wrt the number of pixels. Using the connected component data you can color a bitmap image like this:
 
 ![ScreenShot](http://upload.wikimedia.org/wikipedia/commons/thumb/a/ae/Screenshot-Figure_1.png/800px-Screenshot-Figure_1.png)
 
