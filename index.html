@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="UTF-8">
+    <title>Morph by PorkShoulderHolder</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
+  </head>
+  <body>
+    <section class="page-header">
+      <h1 class="project-name">Morph</h1>
+      <h2 class="project-tagline">mathematical morphology for javascript</h2>
+      <a href="https://github.com/PorkShoulderHolder/morph" class="btn">View on GitHub</a>
+      <a href="https://github.com/PorkShoulderHolder/morph/zipball/master" class="btn">Download .zip</a>
+      <a href="https://github.com/PorkShoulderHolder/morph/tarball/master" class="btn">Download .tar.gz</a>
+    </section>
+
+    <section class="main-content">
+      <h1>
+<a id="morphjs" class="anchor" href="#morphjs" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>morph.js</h1>
+
+<h1></h1>
+
+<h3>
+<a id="morphological-image-processing-for-javascript" class="anchor" href="#morphological-image-processing-for-javascript" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Morphological image processing for javascript.</h3>
+
+<p>The purpose of morph.js is to make the low level image processing and computer vision functions defined by mathematical morphology available for use with preproccessed input from the webcam via window.getUserMedia(). Morph.js deals with binary images, in other words, all operations are done on arrays of ones and zeroes. </p>
+
+<h3>
+<a id="mathematical-morphology-as-described-by-wikipedia" class="anchor" href="#mathematical-morphology-as-described-by-wikipedia" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Mathematical Morphology as described by wikipedia:</h3>
+
+<p>Mathematical morphology (MM) is a theory and technique for the analysis and processing of geometrical structures, based on set theory, lattice theory, topology, and random functions. MM is most commonly applied to digital images, but it can be employed as well on graphs, surface meshes, solids, and many other spatial structures.
+Topological and geometrical continuous-space concepts such as size, shape, convexity, connectivity, and geodesic distance, were introduced by MM on both continuous and discrete spaces. MM is also the foundation of morphological image processing, which consists of a set of operators that transform images according to the above characterizations.
+MM was originally developed for binary images, and was later extended to grayscale functions and images. The subsequent generalization to complete lattices is widely accepted today as MM's theoretical foundation.</p>
+
+<h2>
+<a id="usage" class="anchor" href="#usage" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Usage</h2>
+
+<p>To initialize a morph object:</p>
+
+<pre><code>var height = 200
+var width = 270
+var morph = new Morph(height, width, bits)
+</code></pre>
+
+<p>where bits is an array of 1s and 0s with length (height * width), usually derived from some image.</p>
+
+<p>Basic functionality in Morphological image processing (MIP) is defined by the erode and dilate operations.</p>
+
+<h3>
+<a id="erosion" class="anchor" href="#erosion" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Erosion</h3>
+
+<pre><code>morph.erodeWithElement()
+</code></pre>
+
+<p>when no structuring element argument is provided all operations default to using a default 3x3 rectangular structuring element that looks like this:</p>
+
+<pre><code>[1,1,1,
+ 1,1,1,
+ 1,1,1]
+</code></pre>
+
+<p>And will provide results like this:     </p>
+
+<p><img src="https://www.cs.auckland.ac.nz/courses/compsci773s1c/lectures/ImageProcessing-html/mor-pri-erosion.gif" alt="ScreenShot"></p>
+
+<p>Users can select from other predefined structuring elements like MORPH_3x3_CROSS_ELEMENT, or define their own structuring elements:</p>
+
+<pre><code>var el = new StructuringElement(3,[1,1,1,
+                                   0,1,0,
+                                   0,0,0])
+</code></pre>
+
+<p>Where the 1st argument is the dimension of the element. </p>
+
+<h3>
+<a id="dilation" class="anchor" href="#dilation" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Dilation</h3>
+
+<pre><code>morph.dilateWithElement()
+</code></pre>
+
+<p>Will provide results like this:</p>
+
+<p><img src="http://angelinagokhale.files.wordpress.com/2013/04/diltbin.gif" alt="ScreenShot"></p>
+
+<p>Example usage: <a href="http://somatostat.in/swarmSandbox.html">http://somatostat.in/swarmSandbox.html</a></p>
+
+<h3>
+<a id="closing" class="anchor" href="#closing" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Closing</h3>
+
+<p>In image processing, closing is, together with opening, the basic workhorse of morphological noise removal. Opening removes small objects, while closing removes small holes [wikipedia]. </p>
+
+<pre><code>morph.closingWithElement()
+</code></pre>
+
+<p>Closing is the dilation operation followed by the erosion operation and depending on the structuring elements used, gives an effect similar to below. </p>
+
+<p><img src="http://homepages.inf.ed.ac.uk/rbf/HIPR2/figs/closebin.gif" alt="ScreenShot"></p>
+
+<h3>
+<a id="opening" class="anchor" href="#opening" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Opening</h3>
+
+<pre><code>morph.openingWithElement()
+</code></pre>
+
+<p>effect:</p>
+
+<p><img src="http://homepages.inf.ed.ac.uk/rbf/HIPR2/figs/openbin.gif" alt="ScreenShot"></p>
+
+<p>removing a small object with opening:</p>
+
+<p><img src="http://patentimages.storage.googleapis.com/WO2005107581A2/imgf000071_0001.png" alt="ScreenShot"></p>
+
+<h3>
+<a id="hit-miss-transform" class="anchor" href="#hit-miss-transform" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Hit-Miss Transform</h3>
+
+<p>The hit-miss transform can be described as a very simplistic corner detector. In morph.js you cannot specify the structuring elements used in the hit-miss transform.   </p>
+
+<pre><code>morph.hitMissTransform()
+</code></pre>
+
+<p>Here is the effect:</p>
+
+<p><img src="http://www.cse.dmu.ac.uk/%7Esexton/WWWPages/HIPR/figs/hamcrn.gif" alt="ScreenShot"></p>
+
+<h3>
+<a id="iterative-thinning" class="anchor" href="#iterative-thinning" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Iterative Thinning</h3>
+
+<p>Thinning is the act of iteratively subtracting the hit miss transform from the image it was generated from. </p>
+
+<pre><code>var iterations = 6;
+morph.iterativeThinning(iterations);
+</code></pre>
+
+<p>If you set the parameter high enough then it will eventually converge to the 'skeletonization' of the image, shown below.</p>
+
+<p><img src="http://homepages.inf.ed.ac.uk/rbf/HIPR2/figs/thnskxmp.gif" alt="ScreenShot"></p>
+
+<p>Be aware: the time complexity of reaching a complete skeletonization is prohibitive for most real-time processing applications.</p>
+
+<h3>
+<a id="connected-component-labeling" class="anchor" href="#connected-component-labeling" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Connected Component Labeling</h3>
+
+<pre><code>var componentData = morph.labelConnectedComponents()
+componentData.contours.forEach(function(contour){
+
+    console.log(contour)
+
+    // returns an array of normalized x,y values [ [0.1,0.2], [0.8,0.1], .... ] 
+
+})
+</code></pre>
+
+<p>This is (in my opinion) the most useful algo in morph.js. Given a binary image, it will label connected sections with integers (not neccesarily consecutive). It is an implementation of the "two pass" algorithm described on wikipedia (<a href="http://en.wikipedia.org/wiki/Connected-component_labeling">http://en.wikipedia.org/wiki/Connected-component_labeling</a>), and labels regions that are "8-connected". It is also relatively speedy, running linearly wrt the number of pixels. Using the connected component data you can color a bitmap image like this:</p>
+
+<p><img src="http://upload.wikimedia.org/wikipedia/commons/thumb/a/ae/Screenshot-Figure_1.png/800px-Screenshot-Figure_1.png" alt="ScreenShot"></p>
+
+<p>For more info about morphological image proccessing, check out this site, which I referenced extensively above: <a href="http://homepages.inf.ed.ac.uk/rbf/HIPR2/morops.htm">http://homepages.inf.ed.ac.uk/rbf/HIPR2/morops.htm</a> </p>
+
+      <footer class="site-footer">
+        <span class="site-footer-owner"><a href="https://github.com/PorkShoulderHolder/morph">Morph</a> is maintained by <a href="https://github.com/PorkShoulderHolder">PorkShoulderHolder</a>.</span>
+
+        <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
+      </footer>
+
+    </section>
+
+  
+  </body>
+</html>
