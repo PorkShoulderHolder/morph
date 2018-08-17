@@ -1,22 +1,22 @@
-#morph.js
+# morph.js
 ========
 
 
-###Morphological image processing for javascript.
+### Morphological image processing for javascript.
 
 
 The purpose of morph.js is to make the low level image processing and computer vision functions defined by mathematical morphology available for use with preproccessed input from the webcam via window.getUserMedia(). Morph.js deals with binary images, in other words, all operations are done on arrays of ones and zeroes. 
 
 
 
-###Mathematical Morphology as described by wikipedia:
+### Mathematical Morphology as described by wikipedia:
 
 Mathematical morphology (MM) is a theory and technique for the analysis and processing of geometrical structures, based on set theory, lattice theory, topology, and random functions. MM is most commonly applied to digital images, but it can be employed as well on graphs, surface meshes, solids, and many other spatial structures.
 Topological and geometrical continuous-space concepts such as size, shape, convexity, connectivity, and geodesic distance, were introduced by MM on both continuous and discrete spaces. MM is also the foundation of morphological image processing, which consists of a set of operators that transform images according to the above characterizations.
 MM was originally developed for binary images, and was later extended to grayscale functions and images. The subsequent generalization to complete lattices is widely accepted today as MM's theoretical foundation.
 
 
-##Usage
+## Usage
 
 To initialize a morph object:
     
@@ -29,7 +29,7 @@ where bits is an array of 1s and 0s with length (height * width), usually derive
 Basic functionality in Morphological image processing (MIP) is defined by the erode and dilate operations.
 
     
-###Erosion
+### Erosion
 
     morph.erodeWithElement()
 
@@ -52,7 +52,7 @@ Users can select from other predefined structuring elements like MORPH_3x3_CROSS
 Where the 1st argument is the dimension of the element. 
 
 
-###Dilation
+### Dilation
 
     morph.dilateWithElement()
 
@@ -63,7 +63,7 @@ Will provide results like this:
 Example usage: http://somatostat.in/swarmSandbox.html
 
 
-###Closing
+### Closing
 
 In image processing, closing is, together with opening, the basic workhorse of morphological noise removal. Opening removes small objects, while closing removes small holes [wikipedia]. 
 
@@ -88,7 +88,7 @@ removing a small object with opening:
 
 
 
-###Hit-Miss Transform
+### Hit-Miss Transform
 
 The hit-miss transform can be described as a very simplistic corner detector. In morph.js you cannot specify the structuring elements used in the hit-miss transform.   
 
@@ -99,7 +99,7 @@ Here is the effect:
 ![ScreenShot](http://www.cse.dmu.ac.uk/~sexton/WWWPages/HIPR/figs/hamcrn.gif)
 
 
-###Iterative Thinning
+### Iterative Thinning
 
 Thinning is the act of iteratively subtracting the hit miss transform from the image it was generated from. 
     
@@ -112,7 +112,7 @@ If you set the parameter high enough then it will eventually converge to the 'sk
 
 Be aware: the time complexity of reaching a complete skeletonization is prohibitive for most real-time processing applications.
 
-###Connected Component Labeling
+### Connected Component Labeling
 
     var componentData = morph.labelConnectedComponents()
     componentData.contours.forEach(function(contour){
