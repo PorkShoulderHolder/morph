@@ -74,7 +74,7 @@ Closing is the dilation operation followed by the erosion operation and dependin
 ![ScreenShot](http://homepages.inf.ed.ac.uk/rbf/HIPR2/figs/closebin.gif)
 
 
-###Opening
+### Opening
 
     morph.openingWithElement()
     
